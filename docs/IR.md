@@ -4,38 +4,36 @@ Proyecto: Bus de Web Services
 Versión: 1.0
 Fecha: 19/08/2026
 Responsable: Equipo de 2 integrantes (por definir)
-Asignatura: Ingeniería de Software Aplicada III — Universidad Tecnológica de Panamá, Facultad de Ingeniería de Sistemas Computacionales
+Referencia técnica: Crear un Web Service con PHP y MySQL — Primeros pasos (IslaVisual)
 
 ---
 
 1. Introducción
 
-Un web service es un programa. Este programa permite la comunicación entre dos sistemas distintos. Los sistemas pueden estar en plataformas diferentes. Los sistemas pueden usar lenguajes de programación diferentes. El web service envía y recibe datos a través de una red.
+Un web service es un programa. Este programa expone funciones a través de una red. Un cliente remoto puede llamar estas funciones. El cliente no necesita conocer el código interno del servidor.
 
-Un bus de web services es un sistema central. Este sistema conecta varios web services. El bus recibe una solicitud del usuario. El bus envía la solicitud al web service correcto. El web service devuelve una respuesta. El bus entrega la respuesta al usuario.
+PHP incluye una extensión llamada SOAP. Esta extensión crea y consume web services. La extensión soporta SOAP 1.1, SOAP 1.2 y WSDL 1.1. La extensión debe estar activa en el archivo php.ini del servidor. Sin esta extensión, las clases `SoapServer` y `SoapClient` no funcionan.
 
-SOAP es un protocolo de comunicación. SOAP usa mensajes en formato XML. SOAP define reglas estrictas para el intercambio de datos. REST es un estilo de arquitectura. REST usa el protocolo HTTP de forma directa. REST es, en general, más simple que SOAP.
+Este proyecto no genera un archivo WSDL. El servicio se define de forma manual. El servicio usa un namespace fijo: `urn:BusWebServices`. Este enfoque es el mismo que usa el ejemplo de referencia de IslaVisual.
 
-Este proyecto usa el protocolo SOAP. El proyecto usa PHP como lenguaje de programación. El proyecto usa MySQL como motor de base de datos.
+Un bus de web services es un componente central. Este componente agrupa varias operaciones en un solo punto de entrada. El archivo `bus.php` cumple este rol en este proyecto. `bus.php` crea un `SoapServer` y le asigna la clase `BusService`. La clase `BusService` contiene las operaciones reales del bus. Cada operación se conecta a una base de datos MySQL mediante PDO.
 
-La interoperabilidad es la capacidad de dos sistemas para trabajar juntos. Los web services dan interoperabilidad a los sistemas distribuidos. Un sistema distribuido tiene partes que funcionan en computadoras diferentes. Sin un estándar común, dos sistemas distintos no pueden intercambiar datos de forma confiable. Por esta razón, se usan protocolos como SOAP y REST.
+El bus registra el uso de cada operación. Cada llamada genera un registro en la tabla `logs_bus`. El registro guarda el nombre de la operación y el resultado (OK o FAULT). Este registro permite generar reportes de uso y también permite borrar el historial cuando sea necesario.
 
 ---
 
 2. Objetivo del Proyecto
 
 Objetivo general:
-- Analizar los fundamentos teóricos y arquitectónicos de los web services.
-- Comprender el rol de los web services como solución de interoperabilidad entre sistemas distribuidos.
-- Comparar los estándares SOAP y REST mediante su aplicación en un caso real.
-- Determinar la vigencia y pertinencia de estos estándares en la ingeniería de software actual.
+- Construir un bus de web services funcional, usando PHP, la extensión SOAP y MySQL.
 
 Objetivos específicos:
-- Crear un web service con PHP y MySQL.
-- Integrar uno o más web services en un bus central.
-- Crear un módulo de administración con un botón para borrar las búsquedas registradas.
-- Preparar y realizar una exposición práctica del proyecto.
-- Elaborar un manual de usuario.
+- Exponer un conjunto de operaciones SOAP a través de un único punto de entrada (`bus.php`).
+- Persistir usuarios, productos y registros de uso en una base de datos MySQL.
+- Registrar cada llamada al bus como un log de uso (operación y resultado).
+- Generar un reporte agregado del uso del bus por operación.
+- Construir un cliente de prueba que consuma el bus mediante `SoapClient`.
+- Construir un módulo de administración con un botón para borrar el historial de logs.
 
 ---
 
@@ -43,17 +41,24 @@ Objetivos específicos:
 
 Incluye:
 
-- Diseño y desarrollo de un bus de web services.
-- Al menos un web service creado con PHP y MySQL, usando el protocolo SOAP.
-- Un módulo de administración con un botón para borrar las búsquedas realizadas.
-- Documentación técnica y manual de usuario.
-- Preparación y ejecución de una exposición grupal en clase.
+- `bus.php`: punto de entrada SOAP. Crea el `SoapServer` sin WSDL y expone la clase `BusService`.
+- `BusService.php`: clase con las operaciones del bus:
+  - `login(usuario, password)`
+  - `consultarProducto(codigo)`
+  - `listarProductos()`
+  - `reporteUso()`
+- `config/Conexion.php`: conexión única a MySQL vía PDO, configurada por variables de entorno (`.env`).
+- `database/schema.sql`: tablas `usuarios`, `productos` y `logs_bus`, con datos de prueba.
+- `cliente.php` (pendiente): script que consume el bus con `SoapClient` y prueba las 4 operaciones.
+- `admin.php` (pendiente): página con un botón que borra los registros de `logs_bus`, con confirmación previa.
 
 No incluye:
 
-- Despliegue en un servidor de producción externo a la universidad, salvo indicación contraria del profesor.
-- Integración con sistemas de terceros fuera del alcance académico del curso.
-- Soporte técnico posterior a la fecha de entrega final (18/09/2026).
+- Generación o publicación de un archivo WSDL.
+- Una API REST equivalente.
+- Un sistema de sesiones o roles de usuario más allá de la validación simple de `login`.
+- Despliegue en un servidor de producción.
+- Una interfaz gráfica más allá de las páginas simples `cliente.php` y `admin.php`.
 
 ---
 
@@ -61,10 +66,9 @@ No incluye:
 
 | Rol | Nombre | Descripción |
 | --- | --- | --- |
-| Profesor de Proyectos | Arturo Murillo | Evalúa el proyecto. Define los criterios de aceptación y la matriz de evaluación. |
-| Integrante del equipo 1 | Por definir | Desarrolla el bus de web services. Da soporte a la clase. |
-| Integrante del equipo 2 | Por definir | Desarrolla el bus de web services. Da soporte a la clase. |
-| Compañeros de clase | Grupo del curso | Usan la herramienta durante las sesiones de clase. |
+| Equipo de desarrollo | Por definir (2 integrantes) | Construye y mantiene `bus.php`, `BusService.php`, `cliente.php` y `admin.php`. |
+| Usuario del bus | Cliente SOAP (`cliente.php` u otro consumidor) | Llama a las operaciones del bus: `login`, `consultarProducto`, `listarProductos`, `reporteUso`. |
+| Administrador | Persona con acceso a `admin.php` | Borra el historial de logs del bus cuando sea necesario. |
 
 ---
 
@@ -72,10 +76,13 @@ No incluye:
 
 | ID | Requerimiento | Descripción | Prioridad |
 | --- | --- | --- | --- |
-| RF-01 | Crear web service SOAP | El sistema debe exponer un web service en PHP. El web service debe consultar una base de datos MySQL. | Alta |
-| RF-02 | Crear bus de web services | El sistema debe centralizar el acceso a uno o más web services. El bus debe recibir la solicitud del usuario y devolver la respuesta correspondiente. | Alta |
-| RF-03 | Registrar búsquedas | El sistema debe guardar un historial de las búsquedas realizadas por los usuarios. | Media |
-| RF-04 | Botón de administración | El sistema debe tener un botón de administración. Este botón borra el historial de búsquedas. | Alta |
+| RF-01 | Autenticar usuario | La operación `login(usuario, password)` debe validar las credenciales contra la tabla `usuarios`, usando `password_verify`. | Alta |
+| RF-02 | Consultar producto | La operación `consultarProducto(codigo)` debe devolver código, nombre, precio y stock de un producto existente. | Alta |
+| RF-03 | Listar productos | La operación `listarProductos()` debe devolver todos los productos ordenados por nombre. | Media |
+| RF-04 | Reportar uso | La operación `reporteUso()` debe devolver, por operación, el total de llamadas y el total de errores (`FAULT`), a partir de `logs_bus`. | Media |
+| RF-05 | Registrar log de uso | Cada llamada a una operación del bus debe insertar un registro en `logs_bus` con la operación y el resultado (`OK` o `FAULT`). | Alta |
+| RF-06 | Botón de administración | `admin.php` debe mostrar un botón que borra todos los registros de `logs_bus`, tras pedir confirmación. | Alta |
+| RF-07 | Cliente de prueba | `cliente.php` debe consumir el bus con `SoapClient` y mostrar el resultado de las 4 operaciones expuestas. | Media |
 
 ---
 
@@ -83,37 +90,39 @@ No incluye:
 
 | ID | Tipo | Descripción |
 | --- | --- | --- |
-| RNF-01 | Usabilidad | La interfaz debe ser clara. Un compañero de clase debe poder usarla sin ayuda extensa. |
-| RNF-02 | Documentación | El equipo debe entregar un manual de usuario. Este manual vale el 50% de la nota total. |
-| RNF-03 | Soporte | Cada integrante debe apoyar a otros estudiantes durante el uso de la herramienta en clase. |
-| RNF-04 | Compatibilidad | El web service debe funcionar con PHP y MySQL. |
+| RNF-01 | Seguridad | Las contraseñas se almacenan como hash (`password_hash`, bcrypt). Nunca se guardan ni se devuelven en texto plano. |
+| RNF-02 | Seguridad | Todas las consultas SQL usan sentencias preparadas de PDO, para evitar inyección SQL. |
+| RNF-03 | Configuración | El servidor debe tener activa la extensión SOAP de PHP (`extension=soap` en `php.ini`). |
+| RNF-04 | Configuración | Las credenciales de base de datos se leen de variables de entorno (`.env`), no del código fuente. |
+| RNF-05 | Confiabilidad | El borrado de logs en `admin.php` es una acción destructiva. Debe pedir confirmación antes de ejecutarse. |
+| RNF-06 | Compatibilidad | La base de datos usa motor InnoDB y charset `utf8mb4`. |
 
 ---
 
 7. Reglas de Negocio
 
-- El proyecto es grupal. Cada grupo tiene 2 personas.
-- El equipo debe exponer el proyecto en las sesiones de clase.
-- Cada integrante debe apoyar al resto de la clase en el uso correcto de la herramienta.
-- El equipo debe traer los criterios de evaluación el día de la exposición.
+- El servicio SOAP no usa WSDL. El namespace fijo es `urn:BusWebServices`.
+- Toda operación del bus, exitosa o fallida, debe generar un registro en `logs_bus`.
+- Un intento de `login` fallido debe lanzar un `SoapFault` genérico, sin indicar si el usuario existe.
+- El campo `codigo` de la tabla `productos` es único y es la clave de búsqueda para `consultarProducto`.
+- Borrar los registros de `logs_bus` no debe afectar ni a `usuarios` ni a `productos`.
 
 ---
 
 8. Supuestos
 
-- Los estudiantes tienen acceso a un servidor con PHP y MySQL.
-- El profesor evalúa el proyecto según la matriz de evaluación adjunta a la guía.
-- Las sesiones de clase incluyen tiempo asignado para la exposición de cada grupo.
+- El servidor de despliegue tiene PHP 8 o superior, con la extensión SOAP habilitada.
+- Existe una base de datos MySQL accesible con las credenciales definidas en `.env`.
+- Los datos de prueba del esquema (usuario `demo`, productos `PRD-001` y `PRD-002`) son suficientes para validar el bus durante el desarrollo.
 
 ---
 
 9. Restricciones
 
-- Fecha de inicio: 19/08/2026.
-- Fecha de fin: 18/09/2026.
-- El equipo debe tener exactamente 2 integrantes.
-- El proyecto debe usar PHP y MySQL, según el ejemplo de referencia indicado por el profesor.
-- La presentación debe realizarse en las sesiones de clase, no fuera de ellas.
+- El bus debe implementarse con la extensión SOAP nativa de PHP, sin frameworks adicionales.
+- La conexión a la base de datos debe hacerse únicamente mediante PDO.
+- `cliente.php` y `admin.php` están pendientes de desarrollo (ver `docs/documentacion.md`).
+- El proyecto no debe depender de un archivo WSDL externo.
 
 ---
 
@@ -121,21 +130,20 @@ No incluye:
 
 | Riesgo | Impacto | Mitigación |
 | --- | --- | --- |
-| Un integrante no puede asistir a la exposición | Alto: afecta el 50% práctico de la nota | Repartir el conocimiento entre los dos integrantes. Ambos deben poder exponer cualquier parte del proyecto. |
-| Falla del servidor o de la base de datos durante la demo | Alto: la demostración no funciona | Probar el sistema antes de la exposición. Mantener una copia local de respaldo. |
-| Entrega tardía del manual de usuario | Medio: afecta el 50% escrito de la nota | Fijar una fecha interna de entrega anterior al 18/09/2026. |
+| La extensión SOAP no está habilitada en el servidor de pruebas | Alto: el bus no responde ninguna petición | Verificar `phpinfo()` o `php.ini` antes de ejecutar el bus. |
+| Sin WSDL, el cliente no conoce automáticamente los métodos disponibles | Medio: el consumidor debe conocer los métodos de antemano | Mantener actualizada la lista de operaciones en `docs/documentacion.md`. |
+| Borrado accidental de `logs_bus` desde `admin.php` | Medio: se pierde el historial de uso | Pedir confirmación explícita antes de ejecutar el `DELETE`. |
+| Credenciales de base de datos expuestas en el repositorio | Alto: riesgo de seguridad | Usar `.env` (no versionado) y mantener `.env.example` solo con valores de ejemplo. |
 
 ---
 
 11. Criterios de Aceptación
 
-- El web service responde correctamente usando el protocolo SOAP.
-- El bus de web services conecta el web service con el usuario final.
-- El botón de administración borra el historial de búsquedas sin errores.
-- El equipo entrega el manual de usuario completo.
-- El equipo expone el proyecto en la fecha asignada por el profesor.
-- La evaluación total es de 100 puntos. 50 puntos corresponden a la exposición y práctica en grupo. 50 puntos corresponden al trabajo escrito (manual de usuario).
-- La matriz de evaluación mide cinco elementos: exposición general del grupo, aportes del grupo, uso práctico de la teoría, conocimiento del tema, y calidad y pertinencia. Cada elemento se califica de 1 (deficiente) a 5 (excelente).
+- `bus.php` responde correctamente a peticiones SOAP para `login`, `consultarProducto`, `listarProductos` y `reporteUso`.
+- `login` nunca devuelve la contraseña ni el hash, solo `usuario` y `nombre` cuando la autenticación es correcta.
+- Cada llamada a una operación del bus queda registrada en `logs_bus`, con el resultado correcto (`OK` o `FAULT`).
+- `admin.php` borra los registros de `logs_bus` solo después de confirmación, y `reporteUso()` refleja el borrado.
+- `cliente.php` consume el bus mediante `SoapClient` y muestra el resultado de las 4 operaciones sin errores.
 
 ---
 
@@ -143,6 +151,5 @@ No incluye:
 
 | Nombre | Cargo | Firma | Fecha |
 | --- | --- | --- | --- |
-| Arturo Murillo | Profesor de Proyectos | | |
 | | Integrante 1 | | |
 | | Integrante 2 | | |
