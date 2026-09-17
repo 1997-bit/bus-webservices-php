@@ -41,7 +41,7 @@ class BusService
             'codigo' => $producto['codigo'],
             'nombre' => $producto['nombre'],
             'precio' => (float) $producto['precio'],
-            'stock'  => (int) $producto['stock'],
+            'stock' => (int) $producto['stock'],
         ];
     }
 
@@ -58,7 +58,7 @@ class BusService
                 'codigo' => $fila['codigo'],
                 'nombre' => $fila['nombre'],
                 'precio' => (float) $fila['precio'],
-                'stock'  => (int) $fila['stock'],
+                'stock' => (int) $fila['stock'],
             ];
         }
 
@@ -78,9 +78,9 @@ class BusService
         $reporte = [];
         foreach ($stmt as $fila) {
             $reporte[] = [
-                'operacion'      => $fila['operacion'],
-                'total'          => (int) $fila['total'],
-                'total_errores'  => (int) $fila['total_errores'],
+                'operacion' => $fila['operacion'],
+                'total' => (int) $fila['total'],
+                'total_errores' => (int) $fila['total_errores'],
             ];
         }
 

@@ -90,7 +90,7 @@ No incluye:
 
 | ID | Tipo | Descripción |
 | --- | --- | --- |
-| RNF-01 | Seguridad | Las contraseñas se almacenan como hash (`password_hash`, bcrypt). Nunca se guardan ni se devuelven en texto plano. |
+| RNF-01 | Seguridad | Las contraseñas se almacenan como hash (`password_hash`, Argon2id). Nunca se guardan ni se devuelven en texto plano. |
 | RNF-02 | Seguridad | Todas las consultas SQL usan sentencias preparadas de PDO, para evitar inyección SQL. |
 | RNF-03 | Configuración | El servidor debe tener activa la extensión SOAP de PHP (`extension=soap` en `php.ini`). |
 | RNF-04 | Configuración | Las credenciales de base de datos se leen de variables de entorno (`.env`), no del código fuente. |
