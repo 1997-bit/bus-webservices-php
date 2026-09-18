@@ -64,10 +64,10 @@ try {
             }
             ?>
             
-            <p><a href="index.php">Volver al cliente</a></p>
-        <?php else: ?>
+<p><a href="cliente.php">Volver al cliente</a></p>
+            <?php else: ?>
             <p>Ningún registro ha sido borrado aún.</p>
-            <p><a href="index.php">Volver al cliente SOAP</a></p>
+            <p><a href="cliente.php">Volver al cliente SOAP</a></p>
         <?php endif; ?>
     </div>
 </body>
